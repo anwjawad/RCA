@@ -1,0 +1,141 @@
+/* Glassmorphism & Animations */
+
+/* Base Layer */
+body {
+    background-color: #f8fafc;
+}
+
+/* Glass Header */
+.glass-header {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Nav Buttons */
+.nav-btn {
+    @apply px-4 py-2 rounded-lg text-sm font-medium text-slate-500 transition-all duration-200 flex items-center gap-2;
+}
+
+.nav-btn:hover {
+    @apply bg-white/80 text-brand-600 shadow-sm;
+}
+
+.nav-btn.active {
+    @apply bg-white text-brand-600 shadow-md ring-1 ring-black/5 font-bold;
+}
+
+/* Glass Panels */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    @apply rounded-2xl;
+}
+
+/* Animations */
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+.animate-blob {
+    animation: blob 10s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Print Styles */
+@media print {
+
+    /* Hide everything by default */
+    body>* {
+        display: none !important;
+    }
+
+    /* Show only the print container */
+    #print-container {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        visibility: visible !important;
+        background: white !important;
+        z-index: 9999;
+    }
+
+
+
+    /* Reset children display specifically if needed, or just rely on parent visibility/display */
+    /* Better approach: Don't force display block on children, just visible */
+    #print-container * {
+        visibility: visible !important;
+    }
+
+    /* We need to override the 'hidden' class on the container specifically */
+
+    @page {
+        size: A4;
+        margin: 20mm;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Utilities */
+.safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+}
