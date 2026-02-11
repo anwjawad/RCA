@@ -57,7 +57,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden flex flex-col">
+<body class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden">
 
     <!-- Background Gradients -->
     <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
@@ -68,59 +68,81 @@
         </div>
     </div>
 
-    <!-- Top Navigation (Desktop) -->
-    <header class="h-16 glass-header border-b border-white/30 flex items-center justify-between px-6 z-50 shrink-0">
-        <div class="flex items-center gap-3">
-            <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-                <i class="fa-solid fa-x-ray text-xl"></i>
-            </div>
-            <div>
-                <h1 class="font-display font-bold text-xl tracking-tight text-slate-900">Rad<span
-                        class="text-brand-600">Center</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none hidden sm:block">
-                    Diagnostic
-                    Imaging</p>
-            </div>
-        </div>
+    <!-- App Layout -->
+    <div class="flex h-screen overflow-hidden">
 
-        <!-- Role-Based Nav Links (Desktop) -->
-        <nav
-            class="hidden md:flex items-center gap-1 bg-white/50 p-1 rounded-xl border border-white/50 backdrop-blur-sm">
-            <button onclick="App.router.navigate('reception')" class="nav-btn active" data-page="reception">
-                <i class="fa-solid fa-clipboard-user"></i> Reception
-            </button>
-            <button onclick="App.router.navigate('technician')" class="nav-btn" data-page="technician">
-                <i class="fa-solid fa-microscope"></i> Technician
-            </button>
-            <button onclick="App.router.navigate('radiologist')" class="nav-btn" data-page="radiologist">
-                <i class="fa-solid fa-file-medical"></i> Reporting
-            </button>
-            <button onclick="App.router.navigate('admin')" class="nav-btn" data-page="admin">
-                <i class="fa-solid fa-chart-pie"></i> Admin
-            </button>
-        </nav>
-
-        <div class="flex items-center gap-4">
-            <div class="text-right hidden sm:block">
-                <p class="text-sm font-bold text-slate-700" id="user-name">Guest</p>
-                <p class="text-xs text-slate-500" id="user-role">Not Logged In</p>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm relative group cursor-pointer"
-                onclick="App.controllers.auth.logout()">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside
+            class="hidden md:flex w-64 flex-col bg-white/80 backdrop-blur-xl border-r border-white/50 z-50 shrink-0 h-full transition-all duration-300">
+            <!-- Brand -->
+            <div class="h-20 flex items-center gap-3 px-6 border-b border-slate-100/50">
                 <div
-                    class="absolute inset-0 bg-slate-900/50 hidden group-hover:flex items-center justify-center text-white text-xs font-bold">
-                    <i class="fa-solid fa-power-off"></i>
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-x-ray text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-xl tracking-tight text-slate-900">Rad<span
+                            class="text-brand-600">Center</span></h1>
                 </div>
             </div>
-        </div>
-    </header>
 
-    <!-- Main Content Area -->
-    <main id="app-content" class="flex-1 overflow-hidden relative">
-        <!-- Pages will be injected here by App.js -->
-    </main>
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <p class="px-4 text-xs font-bold text-slate-400 uppercase mb-2">Menu</p>
+
+                <button onclick="App.router.navigate('reception')" class="nav-btn w-full" data-page="reception">
+                    <i class="fa-solid fa-clipboard-user w-6"></i> Reception
+                </button>
+                <button onclick="App.router.navigate('technician')" class="nav-btn w-full" data-page="technician">
+                    <i class="fa-solid fa-microscope w-6"></i> Technician
+                </button>
+                <button onclick="App.router.navigate('radiologist')" class="nav-btn w-full" data-page="radiologist">
+                    <i class="fa-solid fa-file-medical w-6"></i> Reporting
+                </button>
+                <button onclick="App.router.navigate('admin')" class="nav-btn w-full" data-page="admin">
+                    <i class="fa-solid fa-chart-pie w-6"></i> Admin
+                </button>
+
+                <div class="my-6 border-t border-slate-100"></div>
+
+                <p class="px-4 text-xs font-bold text-slate-400 uppercase mb-2">Actions</p>
+
+                <!-- Recent Visits Button -->
+                <button onclick="App.controllers.reception.openRecentVisitsModal()"
+                    class="nav-btn w-full text-slate-600 hover:text-brand-600 hover:bg-brand-50/50">
+                    <i class="fa-solid fa-clock-rotate-left w-6"></i> Recent Visits
+                </button>
+            </nav>
+
+            <!-- User Profile (Bottom) -->
+            <div class="p-4 border-t border-slate-100 bg-white/40">
+                <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/60 transition-colors group cursor-pointer"
+                    onclick="App.controllers.auth.logout()">
+                    <div
+                        class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm relative shrink-0">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User"
+                            class="w-full h-full object-cover">
+                        <div
+                            class="absolute inset-0 bg-slate-900/50 hidden group-hover:flex items-center justify-center text-white text-xs font-bold transition-opacity">
+                            <i class="fa-solid fa-power-off"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-700 truncate" id="user-name">Guest</p>
+                        <p class="text-xs text-slate-500 truncate" id="user-role">Not Logged In</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs group-hover:text-slate-400"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="app-content" class="flex-1 overflow-hidden relative flex flex-col h-full">
+            <!-- Header for Mobile/Title context if needed, otherwise content injected directly -->
+            <!-- Pages will be injected here by App.js -->
+        </main>
+
+    </div>
 
     <!-- Modals -->
     <!-- 1. New Visit Modal -->
@@ -153,18 +175,21 @@
                     </div>
 
                     <!-- Step 2: Visit Details -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Referrer Doctor</label>
-                            <input type="text" id="visit-referrer"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500"
-                                placeholder="Dr. Smith">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date</label>
-                            <input type="datetime-local" id="visit-date"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500">
-                        </div>
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date</label>
+                        <input type="datetime-local" id="visit-date"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <!-- Assign Doctor -->
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">
+                            <i class="fa-solid fa-user-doctor mr-1"></i> Assign to Doctor
+                        </label>
+                        <select id="visit-assigned-doctor"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="">Select Doctor...</option>
+                        </select>
                     </div>
 
                     <!-- Step 3: Add Studies -->
@@ -213,40 +238,85 @@
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onclick="App.controllers.reception.closeNewPatientModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div class="h-14 bg-slate-800 flex items-center justify-between px-6 text-white">
                     <h3 class="font-bold"><i class="fa-solid fa-user-plus mr-2"></i> Register Patient</h3>
                     <button onclick="App.controllers.reception.closeNewPatientModal()"><i
                             class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
-                        <input type="text" id="pat-name"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-slate-500">
-                    </div>
+                <div class="p-6 overflow-y-auto space-y-4">
                     <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="pat-name" required
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Date of Birth</label>
-                            <input type="date" id="pat-dob"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-slate-500">
+                            <input type="date" id="pat-dob" onchange="App.helpers.calculateAge(this.value)"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Gender</label>
-                            <select id="pat-gender"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-slate-500">
-                                <option>Male</option>
-                                <option>Female</option>
-                            </select>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Age</label>
+                                <input type="number" id="pat-age"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Gender</label>
+                                <select id="pat-gender"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500">
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
+                            <input type="tel" id="pat-phone"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+
+                        <!-- Clinical Info -->
+                        <div class="col-span-2 border-t border-slate-100 pt-4 mt-2">
+                            <p class="text-xs font-bold text-brand-600 uppercase mb-3"><i
+                                    class="fa-solid fa-notes-medical mr-1"></i> Clinical Context (Optional)</p>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2 md:col-span-1">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chief
+                                        Complaint</label>
+                                    <textarea id="pat-complaint" rows="2"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                                        placeholder="e.g. Abdominal pain..."></textarea>
+                                </div>
+                                <div class="col-span-2 md:col-span-1">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Diagnosis /
+                                        History</label>
+                                    <textarea id="pat-diagnosis" rows="2"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                                        placeholder="e.g. Hypertension, Diabetes..."></textarea>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Medical History
+                                        / Allergies</label>
+                                    <input type="text" id="pat-history"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-brand-500 text-sm"
+                                        placeholder="e.g. Penicillin allergy">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
-                        <input type="tel" id="pat-phone"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-slate-500">
-                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                    <button onclick="App.controllers.reception.closeNewPatientModal()"
+                        class="px-6 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-xl">Cancel</button>
                     <button onclick="App.controllers.reception.savePatient()"
-                        class="w-full py-3 bg-slate-800 text-white font-bold rounded-xl shadow-lg mt-2 hover:bg-slate-900">Register</button>
+                        class="px-6 py-2 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-900 shadow-slate-900/20">Register
+                        Patient</button>
                 </div>
             </div>
         </div>
@@ -270,6 +340,38 @@
 
                 <!-- Content -->
                 <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                    <!-- Clinical Profile -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div
+                                class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600">
+                                <i class="fa-solid fa-user-doctor"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Clinical Profile</h4>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Age</p>
+                                <p class="font-bold text-slate-800 text-lg" id="pf-age">--</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Chief Complaint</p>
+                                <p class="font-medium text-slate-700" id="pf-complaint">--</p>
+                            </div>
+                            <div class="col-span-2 border-t border-slate-50 pt-2">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Diagnosis</p>
+                                <p class="text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100"
+                                    id="pf-diagnosis">--</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Medical History /
+                                    Allergies</p>
+                                <p class="text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 italic"
+                                    id="pf-history">--</p>
+                            </div>
+                        </div>
+                    </div>
                     <h4 class="font-bold text-slate-700 mb-4 border-b border-slate-200 pb-2 flex items-center">
                         <i class="fa-solid fa-clock-rotate-left mr-2 text-brand-600"></i> Visit History
                     </h4>
@@ -281,8 +383,31 @@
         </div>
     </div>
 
+    <!-- 4. Recent Visits Modal -->
+    <div id="recent-visits-modal" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onclick="App.controllers.reception.closeRecentVisitsModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+                <!-- Header -->
+                <div
+                    class="h-16 bg-gradient-to-r from-brand-600 to-indigo-600 flex items-center justify-between px-6 text-white shrink-0">
+                    <h3 class="font-bold text-lg"><i class="fa-solid fa-clock-rotate-left mr-2"></i> Recent Visits</h3>
+                    <button onclick="App.controllers.reception.closeRecentVisitsModal()"
+                        class="hover:bg-white/20 p-2 rounded-lg transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
 
-    <!-- 4. Login Modal -->
+                <!-- Content -->
+                <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                    <div id="recent-visits-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Login Modal -->
     <div id="login-modal"
         class="fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-md flex items-center justify-center hidden">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center relative overflow-hidden">

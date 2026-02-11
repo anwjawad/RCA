@@ -17,9 +17,9 @@ function setup() {
   
   // Define Schema
   const schema = {
-    'Patients': ['id', 'full_name', 'dob', 'gender', 'phone', 'created_at'],
-    'Visits': ['id', 'patient_id', 'status', 'check_in_time', 'referrer_doctor', 'created_at'],
-    'Studies': ['id', 'visit_id', 'modality', 'region', 'study_name', 'price', 'status', 'technician', 'radiologist', 'report_content', 'created_at'],
+    'Patients': ['id', 'full_name', 'dob', 'age', 'gender', 'phone', 'diagnosis', 'complaint', 'medical_history', 'allergies', 'created_at'],
+    'Visits': ['id', 'patient_id', 'status', 'check_in_time', 'referrer_doctor', 'assigned_doctor_id', 'created_at'],
+    'Studies': ['id', 'visit_id', 'modality', 'region', 'study_name', 'price', 'status', 'technician', 'radiologist', 'assigned_doctor_id', 'report_content', 'completed_at', 'image_links', 'created_at'],
     'Templates': ['id', 'modality', 'organ', 'disease', 'title', 'content', 'fields', 'is_active'],
     'Users': ['id', 'email', 'full_name', 'role', 'pin', 'created_at']
   };
@@ -40,6 +40,8 @@ function setup() {
       if (firstHeader === 'email') {
          sheet.clear(); // Wipe old schema
          shouldInit = true;
+      } else {
+        // Only for Users? No, do for all below.
       }
     }
 
@@ -51,6 +53,19 @@ function setup() {
       if (sheetName === 'Users') {
         sheet.appendRow(['USR-ADMIN', 'admin@center.com', 'System Admin', 'Admin', '1234', new Date()]);
       }
+    } else {
+       // Schema Migration: Append missing columns
+      const currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const desiredHeaders = schema[sheetName];
+      let newColIndex = sheet.getLastColumn() + 1;
+      
+      desiredHeaders.forEach(header => {
+         if (!currentHeaders.includes(header)) {
+            sheet.getRange(1, newColIndex).setValue(header);
+            Logger.log('Added missing header: ' + header + ' to ' + sheetName);
+            newColIndex++;
+         }
+      });
     }
   });
 }
@@ -111,6 +126,19 @@ function handleRequest(e) {
         result = updateRow('Studies', payload.study_id, { 
           report_content: payload.content_html, 
           status: 'Reported' 
+        });
+        break;
+      case 'markComplete':
+        // payload: { study_id }
+        result = updateRow('Studies', payload.study_id, { 
+          status: 'Completed',
+          completed_at: new Date().toISOString()
+        });
+        break;
+      case 'updateImageLinks':
+        // payload: { study_id, image_links: [...] }
+        result = updateRow('Studies', payload.study_id, { 
+          image_links: JSON.stringify(payload.image_links || [])
         });
         break;
       default:

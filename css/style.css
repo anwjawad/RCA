@@ -13,16 +13,20 @@ body {
 }
 
 /* Nav Buttons */
+/* Nav Buttons */
+/* Nav Buttons */
 .nav-btn {
-    @apply px-4 py-2 rounded-lg text-sm font-medium text-slate-500 transition-all duration-200 flex items-center gap-2;
+    @apply px-4 py-3 rounded-xl text-sm font-bold text-slate-500 transition-all duration-200 flex items-center gap-3 border border-transparent;
 }
 
 .nav-btn:hover {
-    @apply bg-white/80 text-brand-600 shadow-sm;
+    @apply bg-white/60 text-brand-600 shadow-sm border-white/50;
 }
 
 .nav-btn.active {
-    @apply bg-white text-brand-600 shadow-md ring-1 ring-black/5 font-bold;
+    @apply bg-brand-50 text-brand-700 shadow-sm border-brand-100 font-extrabold;
+    background: linear-gradient(to right, #eff6ff, #ffffff);
+    border-left: 4px solid #0ea5e9;
 }
 
 /* Glass Panels */
