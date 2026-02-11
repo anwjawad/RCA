@@ -7,6 +7,7 @@ const App = {
         patients: [],
         visits: [],
         studies: [], // The main worklist
+        templates: [], // Dynamic Templates
         currentView: 'reception',
         refreshTimer: null
     },
@@ -51,7 +52,8 @@ const App = {
                 App.state.patients = newInfo.patients || [];
                 App.state.visits = newInfo.visits || [];
                 App.state.studies = newInfo.studies || [];
-                App.state.users = newInfo.users || []; // Added Users
+                App.state.users = newInfo.users || [];
+                App.state.templates = newInfo.templates || []; // Load templates
 
                 // Refresh Views
                 if (!silent) {
@@ -1747,37 +1749,53 @@ const App = {
             },
 
             renderTemplateList: () => {
-                // Flatten templates for MVP
                 const list = document.getElementById('template-list');
-                const tpl = Templates.DATA['US']['Abdomen']; // Simplified for demo
-                // In real app, we'd navigate Modality -> Organ keys
+                const templates = App.state.templates.filter(t => t.is_active !== false && t.is_active !== 'FALSE'); // Check boolean/string
 
-                let html = '';
-                // Hardcoded demo loop over US Abdomen just to show flow
-                for (const [name, data] of Object.entries(tpl)) {
-                    html += `
-                        <div class="bg-white border border-slate-200 rounded-lg p-3 hover:border-brand-400 cursor-pointer shadow-sm group" onclick="App.controllers.radiologist.applyTemplate('${name}')">
-                            <h5 class="font-bold text-sm text-slate-700 group-hover:text-brand-600">${name}</h5>
-                            <p class="text-xs text-slate-400 truncate">${data.title}</p>
-                        </div>
-                    `;
-                }
-                list.innerHTML = html + '<div class="text-xs text-slate-400 text-center p-2">Showing US Abdomen (Demo)</div>';
-            },
-
-            applyTemplate: (name) => {
-                const tpl = Templates.DATA['US']['Abdomen'][name];
-                if (!tpl) return;
-
-                // Simple Prompt for Dynamic Fields (MVP)
-                // In v2, this would be a nice form
-                let content = tpl.content;
-                tpl.fields.forEach(f => {
-                    const val = prompt(`Enter ${f.label} (${f.key}):`, f.default);
-                    content = content.replace(new RegExp(`{{${f.key}}}`, 'g'), val || f.default);
+                // Group by Modality -> Region
+                const grouped = {};
+                templates.forEach(t => {
+                    const k = `${t.modality} - ${t.region}`;
+                    if (!grouped[k]) grouped[k] = [];
+                    grouped[k].push(t);
                 });
 
-                App.state.quill.clipboard.dangerouslyPasteHTML(content);
+                if (Object.keys(grouped).length === 0) {
+                    list.innerHTML = '<div class="text-xs text-slate-400 text-center p-4">No templates found. <br> Add one in Admin > Templates.</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const [group, items] of Object.entries(grouped)) {
+                    html += `<div class="bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-500 uppercase rounded mb-1 mt-2">${group}</div>`;
+                    html += items.map(t => `
+                        <div class="bg-white border border-slate-200 rounded-lg p-3 hover:border-brand-400 cursor-pointer shadow-sm group mb-2" onclick="App.controllers.radiologist.applyTemplate('${t.id}')">
+                            <h5 class="font-bold text-sm text-slate-700 group-hover:text-brand-600">${t.title}</h5>
+                        </div>
+                     `).join('');
+                }
+                list.innerHTML = html;
+            },
+
+            applyTemplate: (id) => {
+                const tpl = App.state.templates.find(t => t.id === id);
+                if (!tpl) return;
+
+                let content = tpl.content;
+                let fields = [];
+                try {
+                    fields = JSON.parse(tpl.fields_json || '[]');
+                } catch (e) { console.warn("Invalid fields JSON", e); }
+
+                fields.forEach(f => {
+                    const val = prompt(`Enter ${f.label} (${f.key}):`, f.default || '');
+                    // Use a more robust replacement that handles multiple occurrences
+                    content = content.split(`{{${f.key}}}`).join(val || f.default || ''); // Simple replaceAll
+                });
+
+                App.state.quill.clipboard.dangerouslyPasteHTML(content); // Append? Or Replace? 
+                // Usually radiologists want to append or insert at cursor. Quill paste does insert at selection.
+
                 App.controllers.radiologist.toggleTemplates();
             },
 
@@ -1897,6 +1915,15 @@ const App = {
                                 </button>
                             </div>
 
+                            <!-- Templates Card -->
+                            <div class="glass-panel p-6">
+                                <h3 class="font-bold text-slate-700 mb-4"><i class="fa-solid fa-file-invoice mr-2"></i> Report Templates</h3>
+                                <p class="text-sm text-slate-500 mb-4">Manage dynamic report templates for different modalities.</p>
+                                <button onclick="App.controllers.admin.manageTemplates()" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-brand-700">
+                                    Manage Templates
+                                </button>
+                            </div>
+
                             <!-- Create User Card -->
                             <div class="glass-panel p-6">
                                 <h3 class="font-bold text-slate-700 mb-4"><i class="fa-solid fa-user-plus mr-2"></i> Create User</h3>
@@ -1948,6 +1975,204 @@ const App = {
                     </div>
                 `;
                 App.ui.renderPage('admin', html);
+            },
+
+            // Template Management
+            manageTemplates: () => {
+                const html = `
+                    <div class="h-full flex flex-col p-6 gap-6">
+                        <div class="flex justify-between items-center shrink-0">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-slate-800">Report Templates</h2>
+                                <p class="text-slate-500 text-sm">Create and edit reporting templates</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="App.controllers.admin.render()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300">
+                                    <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                                </button>
+                                <button onclick="App.controllers.admin.openTemplateModal()" class="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-brand-700">
+                                    <i class="fa-solid fa-plus mr-2"></i> New Template
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${App.state.templates.length === 0 ?
+                        `<div class="col-span-3 text-center text-slate-400 py-10 flex flex-col items-center">
+                                        <p class="mb-4">No templates found.</p>
+                                        <button onclick="App.controllers.admin.seedTemplates()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200">
+                                            <i class="fa-solid fa-seedling mr-2"></i> Seed Default Templates
+                                        </button>
+                                     </div>` :
+                        App.state.templates.map(t => `
+                                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:border-brand-500 transition-all">
+                                        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onclick="App.controllers.admin.openTemplateModal('${t.id}')" class="p-1.5 bg-slate-100 rounded text-slate-500 hover:bg-brand-100 hover:text-brand-600"><i class="fa-solid fa-edit"></i></button>
+                                            <button onclick="App.controllers.admin.deleteTemplate('${t.id}')" class="p-1.5 bg-slate-100 rounded text-slate-500 hover:bg-red-100 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase bg-slate-100 text-slate-500 px-2 py-0.5 rounded tracking-wider">${t.modality} | ${t.region}</span>
+                                        <h4 class="font-bold text-slate-800 mt-2 text-base">${t.title}</h4>
+                                        <div class="mt-2 text-xs text-slate-400 line-clamp-3 bg-slate-50 p-2 rounded">${t.content.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                App.ui.renderPage('admin', html);
+            },
+
+            openTemplateModal: (id = null) => {
+                const modal = document.getElementById('template-modal');
+                modal.classList.remove('hidden');
+
+                // Init Quill for Template if not exists
+                if (!App.state.templateQuill) {
+                    App.state.templateQuill = new Quill('#tpl-quill-editor', {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                ['bold', 'italic', 'underline'],
+                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                [{ 'header': [1, 2, 3, false] }],
+                                ['clean']
+                            ]
+                        }
+                    });
+                }
+
+                if (id) {
+                    const t = App.state.templates.find(x => x.id === id);
+                    document.getElementById('tpl-id').value = t.id;
+                    document.getElementById('tpl-title').value = t.title;
+                    document.getElementById('tpl-modality').value = t.modality;
+                    document.getElementById('tpl-region').value = t.region;
+                    // Set Quill Content
+                    App.state.templateQuill.clipboard.dangerouslyPasteHTML(t.content);
+                    document.getElementById('tpl-fields').value = t.fields_json || '[]';
+                } else {
+                    document.getElementById('tpl-id').value = '';
+                    document.getElementById('tpl-title').value = '';
+                    document.getElementById('tpl-modality').value = 'US';
+                    document.getElementById('tpl-region').value = '';
+                    // Clear Quill
+                    App.state.templateQuill.setText('');
+                    document.getElementById('tpl-fields').value = '[]';
+                }
+            },
+
+            closeTemplateModal: () => {
+                document.getElementById('template-modal').classList.add('hidden');
+            },
+
+            saveTemplate: async () => {
+                const id = document.getElementById('tpl-id').value;
+                const title = document.getElementById('tpl-title').value;
+                const modality = document.getElementById('tpl-modality').value;
+                const region = document.getElementById('tpl-region').value;
+                // Get Content from Quill
+                const content = App.state.templateQuill.root.innerHTML;
+                const fieldsJson = document.getElementById('tpl-fields').value;
+
+                if (!title || !content) return alert("Title and Content required");
+
+                try {
+                    JSON.parse(fieldsJson);
+                } catch (e) { return alert("Invalid JSON for fields"); }
+
+                const payload = {
+                    id: id || undefined,
+                    title, modality, region, content,
+                    fields_json: fieldsJson,
+                    is_active: true
+                };
+
+                App.ui.showLoading(true);
+                try {
+                    await API.request('saveTemplate', payload);
+                    // Refresh
+                    await App.loadData(true);
+                    App.controllers.admin.manageTemplates(); // Re-render list
+                    App.controllers.admin.closeTemplateModal();
+                } catch (e) {
+                    alert("Failed to save: " + e.toString());
+                } finally {
+                    App.ui.showLoading(false);
+                }
+            },
+
+            seedTemplates: async () => {
+                if (!confirm("This will add default templates to the database. Continue?")) return;
+                App.ui.showLoading(true);
+                try {
+                    const seeds = [];
+                    // Flatten Templates.DATA
+                    for (const [modality, regions] of Object.entries(Templates.DATA)) {
+                        for (const [region, diseases] of Object.entries(regions)) {
+                            for (const [disease, tpl] of Object.entries(diseases)) {
+                                seeds.push({
+                                    modality,
+                                    region,
+                                    title: tpl.title,
+                                    content: tpl.content,
+                                    fields_json: JSON.stringify(tpl.fields),
+                                    is_active: true
+                                });
+                            }
+                        }
+                    }
+
+                    // Save one by one (Promise.all might hit rate limits)
+                    for (const tpl of seeds) {
+                        await API.request('saveTemplate', tpl);
+                    }
+
+                    await App.loadData(true);
+                    App.controllers.admin.manageTemplates();
+                    alert("Templates seeded successfully!");
+
+                } catch (e) {
+                    alert("Seeding failed: " + e);
+                    console.error(e);
+                }
+                finally { App.ui.showLoading(false); }
+            },
+
+            importWordDoc: (input) => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const arrayBuffer = event.target.result;
+                    mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                        .then(function (result) {
+                            const html = result.value;
+                            const messages = result.messages; // Any warnings
+
+                            // Insert into Quill
+                            if (App.state.templateQuill) {
+                                App.state.templateQuill.clipboard.dangerouslyPasteHTML(html);
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                            alert("Failed to convert Word file.");
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+            },
+
+            deleteTemplate: async (id) => {
+                if (!confirm("Delete this template?")) return;
+                App.ui.showLoading(true);
+                try {
+                    await API.request('deleteTemplate', { id });
+                    await App.loadData(true);
+                    App.controllers.admin.manageTemplates();
+                } catch (e) { alert("Failed: " + e); }
+                finally { App.ui.showLoading(false); }
             },
 
             saveSettings: () => {

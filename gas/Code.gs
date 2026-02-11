@@ -20,7 +20,7 @@ function setup() {
     'Patients': ['id', 'full_name', 'dob', 'age', 'gender', 'phone', 'diagnosis', 'complaint', 'medical_history', 'allergies', 'created_at'],
     'Visits': ['id', 'patient_id', 'status', 'check_in_time', 'referrer_doctor', 'assigned_doctor_id', 'created_at'],
     'Studies': ['id', 'visit_id', 'modality', 'region', 'study_name', 'price', 'status', 'technician', 'radiologist', 'assigned_doctor_id', 'report_content', 'completed_at', 'image_links', 'created_at'],
-    'Templates': ['id', 'modality', 'organ', 'disease', 'title', 'content', 'fields', 'is_active'],
+    'Templates': ['id', 'modality', 'region', 'title', 'content', 'fields_json', 'is_active', 'created_at'],
     'Users': ['id', 'email', 'full_name', 'role', 'pin', 'created_at']
   };
 
@@ -141,6 +141,16 @@ function handleRequest(e) {
           image_links: JSON.stringify(payload.image_links || [])
         });
         break;
+      case 'saveTemplate':
+        if (payload.id) {
+            result = updateRow('Templates', payload.id, payload);
+        } else {
+            result = createRow('Templates', payload, 'TPL');
+        }
+        break;
+      case 'deleteTemplate':
+        result = deleteRow('Templates', payload.id);
+        break;
       default:
         result = { status: 'error', message: 'Unknown Action' };
     }
@@ -168,6 +178,7 @@ function getAllData() {
       patients: getSheetData(ss, 'Patients'),
       visits: getSheetData(ss, 'Visits'),
       studies: getSheetData(ss, 'Studies'),
+      templates: getSheetData(ss, 'Templates'),
       users: getSheetData(ss, 'Users')
     }
   };
@@ -239,4 +250,18 @@ function updateRow(sheetName, id, updates) {
   });
 
   return { status: 'success' };
+}
+
+function deleteRow(sheetName, id) {
+  const ss = SpreadsheetApp.openById(CONFIG.DB_ID);
+  const sheet = ss.getSheetByName(sheetName);
+  const data = sheet.getDataRange().getValues();
+  
+  for(let i=1; i<data.length; i++) {
+    if(String(data[i][0]) === String(id)) {
+      sheet.deleteRow(i + 1);
+      return { status: 'success' };
+    }
+  }
+  return { status: 'error', message: 'ID not found' };
 }

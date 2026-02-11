@@ -502,7 +502,80 @@
         </div>
     </div>
 
+    <!-- 6. Template Modal -->
+    <div id="template-modal" class="fixed inset-0 z-[80] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onclick="App.controllers.admin.closeTemplateModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="h-16 bg-brand-600 flex items-center justify-between px-6 text-white shrink-0">
+                    <h3 class="font-bold text-lg">Edit Template</h3>
+                    <button onclick="App.controllers.admin.closeTemplateModal()"
+                        class="hover:bg-brand-700 p-2 rounded-lg transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto space-y-4">
+                    <input type="hidden" id="tpl-id">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Title</label>
+                            <input type="text" id="tpl-title"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Modality</label>
+                            <select id="tpl-modality"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="US">Ultrasound (US)</option>
+                                <option value="CT">CT Scan</option>
+                                <option value="MRI">MRI</option>
+                                <option value="XR">X-Ray</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Region / Organ</label>
+                            <input type="text" id="tpl-region" placeholder="e.g. Abdomen"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-500 uppercase mb-1 flex justify-between items-center">
+                            <span>Content (Rich Text)</span>
+                            <div class="flex items-center gap-2">
+                                <label for="tpl-import-word"
+                                    class="cursor-pointer text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 font-bold">
+                                    <i class="fa-solid fa-file-word mr-1"></i> Import Word (.docx)
+                                </label>
+                                <input type="file" id="tpl-import-word" accept=".docx" class="hidden"
+                                    onchange="App.controllers.admin.importWordDoc(this)">
+                            </div>
+                        </label>
+                        <!-- Quill Editor Container -->
+                        <div class="h-64 bg-white border border-slate-200 rounded-lg overflow-hidden">
+                            <div id="tpl-quill-editor" class="h-full"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Use {{variable_name}} for dynamic fields. Copy-paste
+                            from Word supported.</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Dynamic Fields
+                            (JSON)</label>
+                        <textarea id="tpl-fields" rows="3"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 font-mono text-xs"></textarea>
+                        <p class="text-[10px] text-slate-400 mt-1">Example: [{"key":"liver_size", "label":"Liver Size",
+                            "default":"Normal"}]</p>
+                    </div>
+                    <button onclick="App.controllers.admin.saveTemplate()"
+                        class="w-full py-3 bg-brand-600 text-white font-bold rounded-xl shadow-lg hover:bg-brand-700">
+                        Save Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Initial Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/templates.js"></script>
     <script src="js/app.js"></script>
